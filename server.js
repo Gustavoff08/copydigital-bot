@@ -1,54 +1,32 @@
-// server.js
 import express from "express";
 import bodyParser from "body-parser";
-import fetch from "node-fetch";
+import axios from "axios";
 
 const app = express();
 app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 3000;
+// Tokens do Meta
+const VERIFY_TOKEN = "seu_verify_token";
+const PAGE_ACCESS_TOKEN = "seu_page_access_token";
 
-// Armazena sessões dos usuários
-const userSessions = {};
+// Memória simples (vai zerar quando reiniciar o servidor)
+const sessions = {};
 
-// Função para enviar mensagem no WhatsApp
-async function sendWhatsAppText(to, message) {
-  const url = "https://graph.facebook.com/v21.0/" + process.env.PHONE_NUMBER_ID + "/messages";
-
-  await fetch(url, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.WHATSAPP_TOKEN}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to: to,
-      type: "text",
-      text: { body: message }
-    })
-  });
-}
-
-// Webhook de verificação do Meta
+// Endpoint de verificação
 app.get("/webhook", (req, res) => {
-  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
-
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
-  if (mode && token) {
-    if (mode === "subscribe" && token === VERIFY_TOKEN) {
-      console.log("Webhook verificado com sucesso!");
-      res.status(200).send(challenge);
-    } else {
-      res.sendStatus(403);
-    }
+  if (mode && token && mode === "subscribe" && token === VERIFY_TOKEN) {
+    console.log("Webhook verificado!");
+    res.status(200).send(challenge);
+  } else {
+    res.sendStatus(403);
   }
 });
 
-// Webhook para receber mensagens
+// Endpoint de mensagens
 app.post("/webhook", async (req, res) => {
   const body = req.body;
 
@@ -56,32 +34,48 @@ app.post("/webhook", async (req, res) => {
     const entry = body.entry?.[0];
     const changes = entry?.changes?.[0];
     const value = changes?.value;
-    const message = value?.messages?.[0];
+    const messages = value?.messages;
 
-    if (message) {
-      const from = message.from; // Número do usuário
-      const text = message.text?.body;
+    if (messages && messages[0]) {
+      const msg = messages[0];
+      const from = msg.from; // número do usuário
+      const text = msg.text?.body;
 
-      if (!userSessions[from]) {
-        userSessions[from] = { step: 0 };
+      // Recupera ou cria sessão
+      if (!sessions[from]) {
+        sessions[from] = { stage: "inicio" };
       }
 
-      const session = userSessions[from];
+      let reply = "";
 
-      if (session.step === 0) {
-        await sendWhatsAppText(from, "Olá 👋! Eu sou o atendimento da *Copy Digital*. Para começarmos, qual é o seu *nome*?");
-        session.step = 1;
-      } 
-      else if (session.step === 1) {
-        session.nome = text;
-        await sendWhatsAppText(from, `Prazer, ${session.nome}! Agora, pode me informar seu *e-mail*?`);
-        session.step = 2;
-      } 
-      else if (session.step === 2) {
-        session.email = text;
-        await sendWhatsAppText(from, `Perfeito ✅! Anotei seus dados:\n\n📌 Nome: ${session.nome}\n📌 E-mail: ${session.email}\n\nEm breve, nossa equipe entrará em contato! 🚀`);
-        session.step = 3;
+      // Fluxo básico
+      if (sessions[from].stage === "inicio") {
+        reply = "Oi! Eu sou o atendimento da Copy Digital 😊 Qual o seu nome?";
+        sessions[from].stage = "perguntar_nome";
+      } else if (sessions[from].stage === "perguntar_nome") {
+        sessions[from].nome = text;
+        reply = `Prazer, ${text}! Como posso te ajudar hoje?`;
+        sessions[from].stage = "menu";
+      } else if (sessions[from].stage === "menu") {
+        reply = "Temos estas opções:\n1️⃣ Tráfego pago\n2️⃣ Landing Pages\n3️⃣ Automações\n\nDigite o número da opção.";
+        sessions[from].stage = "esperando_opcao";
+      } else if (sessions[from].stage === "esperando_opcao") {
+        if (text === "1") reply = "✅ Ótimo! Vou te explicar sobre gestão de tráfego pago...";
+        else if (text === "2") reply = "✅ Legal! Nossas landing pages são otimizadas para conversão...";
+        else if (text === "3") reply = "✅ Show! Criamos automações para economizar seu tempo...";
+        else reply = "❌ Não entendi. Digite 1, 2 ou 3.";
       }
+
+      // Envia a resposta via API do WhatsApp
+      await axios.post(
+        `https://graph.facebook.com/v17.0/${value.metadata.phone_number_id}/messages`,
+        {
+          messaging_product: "whatsapp",
+          to: from,
+          text: { body: reply },
+        },
+        { headers: { Authorization: `Bearer ${PAGE_ACCESS_TOKEN}` } }
+      );
     }
 
     res.sendStatus(200);
@@ -90,7 +84,4 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
-// Inicia o servidor
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+app.listen(3000, () => console.log("Webhook rodando na porta 3000"));
