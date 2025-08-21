@@ -44,7 +44,7 @@ app.post("/webhook", async (req, res) => {
                  i?.button_reply?.id || i?.list_reply?.id || "";
     }
 
-    let reply = "Oi! Sou o atendimento da Copy Digital. Como posso te ajudar?";
+    let reply = "Olá 👋! Eu sou o atendimento da Copy Digital. Para começar, pode me dizer seu nome?";
     // When you have OpenAI credits, enable the assistant call below
     /*
     if (openai && ASSISTANT_ID) {
