@@ -8,7 +8,8 @@ app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'copydigital123';
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN "EAAKf0evy6agBPAjsA8n9j5LmOivtlfEJwQ5yOCLzv2TveOnSSGvOjXvjv046qoS7eXWmhWYy64YMzqE6Fd82mr1O5npbIRVxocNHqnR2ZBN8RyZBZAxAvJLNZCXKYMHhiXjnS90akVzgZAGVoTZAZAKkrEe7ldc3GXYnmg4hmY0oZCpktXt1RqYcHyVoWZC23K2Sc9vIydBEAAWzZCcwpcRi9fj402jMsZBUiMxpuyPnBHjFE30WTRJE0IUhNKfnNtaZAQZDZD
+";
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 
 const sessions = new Map();
