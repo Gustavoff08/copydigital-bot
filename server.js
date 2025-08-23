@@ -1,88 +1,131 @@
-const express = require('express');
+// server.js
+// Copia Digital Bot — WhatsApp Business API (token permanente)
+
+import express from "express";
+import fetch from "node-fetch";
+
 const app = express();
-
-const VERIFY_TOKEN   = process.env.VERIFY_TOKEN;
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
-const PORT = process.env.PORT || 3000;
-
 app.use(express.json());
 
-// Healthcheck
-app.get('/', (req, res) => res.status(200).send('Copy Digital Bot up ✅'));
+// ===== Variáveis de ambiente =====
+const PORT = process.env.PORT || 3000;
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN;         // ex.: "copydigital123"
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;     // token PERMANENTE (System User)
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;   // ex.: "7254528202655578"
 
-// Verificação do webhook (Setup no Meta → Webhooks)
-app.get('/webhook', (req, res) => {
-  const mode = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
-  const challenge = req.query['hub.challenge'];
+if (!VERIFY_TOKEN || !WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+  console.warn(
+    "⚠️ Faltam variáveis de ambiente. Configure VERIFY_TOKEN, WHATSAPP_TOKEN e PHONE_NUMBER_ID no Render."
+  );
+}
 
-  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-    console.log('Webhook verificado com sucesso.');
-    return res.status(200).send(challenge);
-  }
-  return res.sendStatus(403);
+// ===== Healthcheck =====
+app.get("/", (_req, res) => {
+  res.status(200).send("Copy Digital Bot up ✅");
 });
 
-// Recebe mensagens do WhatsApp
-app.post('/webhook', async (req, res) => {
+// ===== Verificação do webhook (GET) =====
+app.get("/webhook", (req, res) => {
   try {
+    const mode = req.query["hub.mode"];
+    const token = req.query["hub.verify_token"];
+    const challenge = req.query["hub.challenge"];
+
+    if (mode === "subscribe" && token === VERIFY_TOKEN) {
+      console.log("✅ WEBHOOK_VERIFIED");
+      return res.status(200).send(challenge); // devolve o 9999 do Meta
+    }
+    return res.sendStatus(403);
+  } catch (e) {
+    console.error("❌ Erro na verificação do webhook:", e);
+    return res.sendStatus(500);
+  }
+});
+
+// ===== Recebimento de mensagens (POST) =====
+app.post("/webhook", async (req, res) => {
+  // Confirma o recebimento para o Meta o mais rápido possível
+  res.sendStatus(200);
+
+  try {
+    // Log bruto do evento (útil para depuração)
+    console.log("📩 Evento recebido:", JSON.stringify(req.body, null, 2));
+
     const entry = req.body?.entry?.[0];
     const changes = entry?.changes?.[0];
     const value = changes?.value;
-
     const messages = value?.messages;
-    if (messages && messages[0]) {
-      const msg = messages[0];
-      const from = msg.from;                            // número do remetente (DDI+DDD+Número)
-      const text = msg.text?.body || '';                // texto recebido
-      console.log(`Mensagem de ${from}: ${text}`);
 
-      // === sua lógica de resposta ===
-      const reply = (text || '').trim().toLowerCase() === 'oi'
-        ? 'Oi! 👋 Aqui é o bot da Copy Digital. Como posso ajudar?'
-        : `Você disse: "${text}"`;
+    if (!messages || !messages[0]) return; // nada a processar
 
-      await sendText(from, reply);
+    const msg = messages[0];
+    const from = msg.from; // número do cliente (sem +)
+    let userText = "";
+
+    // Tipos comuns de mensagem
+    if (msg.type === "text") {
+      userText = msg.text?.body?.trim() || "";
+    } else if (msg.type === "interactive") {
+      const inter = msg.interactive;
+      userText =
+        inter?.button_reply?.title ||
+        inter?.list_reply?.title ||
+        inter?.nfm_reply?.response_json ||
+        "";
+    } else if (msg.type === "reaction") {
+      userText = `Reagiu com: ${msg.reaction?.emoji || ""}`;
+    } else {
+      userText = `[${msg.type}]`;
     }
 
-    // SEMPRE responda 200 rápido para não gerar retries do Meta
-    res.sendStatus(200);
+    console.log(`💬 De ${from}: ${userText}`);
+
+    // Resposta simples: ecoa o que o usuário mandou
+    const resposta =
+      userText && userText !== "[unsupported]"
+        ? `Você disse: ${userText}`
+        : "Oi! 👋 Recebi sua mensagem. Como posso ajudar?";
+
+    await sendText(from, resposta);
   } catch (e) {
-    console.error('ERRO no webhook:', e);
-    res.sendStatus(500);
+    console.error("❌ Erro processando mensagem:", e);
   }
 });
 
-// Função helper: envia texto via Graph API
-async function sendText(to, message) {
-  const url = `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`;
+// ===== Helper: enviar texto =====
+async function sendText(to, text) {
+  try {
+    const url = `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`;
 
-  const payload = {
-    messaging_product: 'whatsapp',
-    to,
-    type: 'text',
-    text: { body: message }
-  };
+    const body = {
+      messaging_product: "whatsapp",
+      to,
+      type: "text",
+      text: { body: text },
+    };
 
-  // Node 18+ tem fetch global
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  });
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
 
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) {
-    console.error('Falha no envio:', r.status, data);
-    throw new Error(`Graph error: ${r.status}`);
+    if (!r.ok) {
+      const err = await r.text();
+      console.error("❌ Erro ao enviar mensagem:", r.status, err);
+    } else {
+      const ok = await r.json();
+      console.log("✅ Mensagem enviada:", JSON.stringify(ok));
+    }
+  } catch (e) {
+    console.error("❌ Falha no fetch de envio:", e);
   }
-  console.log('Enviado com sucesso:', data);
 }
 
+// ===== Start =====
 app.listen(PORT, () => {
-  console.log(`Server rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
