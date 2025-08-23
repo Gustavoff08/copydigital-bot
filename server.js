@@ -8,7 +8,7 @@ app.use(express.json());
 
 // ===== Variáveis de ambiente =====
 const PORT = process.env.PORT || 3000;
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN "copysdigital123";       // ex.: "copysdigital123"
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN "copydigital123";       // ex.: "copysdigital123"
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;   // token PERMANENTE do System User
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID "7254528202655578"; // ex.: "7254528202655578"
 
