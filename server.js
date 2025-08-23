@@ -5,8 +5,8 @@ const fetch = require("node-fetch");
 const app = express().use(bodyParser.json());
 
 // Configurações
-const VERIFY_TOKEN = "gustavo_verify"; // use a mesma string na verificação do webhook no Meta
-const WHATSAPP_TOKEN = "EAAKf0evy6agBPAjsA8n9j5LmOivtlfEJwQ5yOCLzv2TveOnSSGvOjXvjv046qoS7eXWmhWYy64YMzqE6Fd82mr1O5npbIRVxocNHqnR2ZBN8RyZBZAxAvJLNZCXKYMHhiXjnS90akVzgZAGVoTZAZAKkrEe7ldc3GXYnmg4hmY0oZCpktXt1RqYcHyVoWZC23K2Sc9vIydBEAAWzZCcwpcRi9fj402jMsZBUiMxpuyPnBHjFE30WTRJE0IUhNKfnNtaZAQZDZD";
+const VERIFY_TOKEN = "copydigital123"; // use a mesma string na verificação do webhook no Meta
+const WHATSAPP_TOKEN = "EAAKf0evy6agBPTBzr2ecxgccTPPl7bvi74AJZAypYSkPWeoacvHOwAXIdJEOCDswnGBpZBeYno7vYp0wygf235iAC7rWWeiOfpbEbryZBBZCt8sOwZC6KNsVC56ZCXMVzew23rkSTOWsmVKG9TDyjxoYyvl9MuCPgMGPIrUFJkHsKmo06nPyS013rZApe8VqARsOAZDZD";
 const PHONE_NUMBER_ID = "725458220655578";
 
 // Sessões simples em memória
