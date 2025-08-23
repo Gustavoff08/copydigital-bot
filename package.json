@@ -1,13 +1,14 @@
 {
   "name": "copydigital-bot",
   "version": "1.0.0",
-  "type": "module",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
+  "engines": {
+    "node": ">=18.x"
+  },
   "dependencies": {
-    "express": "^4.19.2",
-    "node-fetch": "^3.3.2",
-    "openai": "^4.58.1"
+    "express": "^4.19.2"
   }
 }
