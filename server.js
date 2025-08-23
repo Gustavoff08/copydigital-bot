@@ -9,7 +9,7 @@ app.use(bodyParser.json());
 // ===== CONFIG DIRETA (APENAS PARA TESTE) =====
 // ⚠️ Em produção, mova para variáveis de ambiente!
 const VERIFY_TOKEN    = "copydigital123"; // o mesmo que você colocou no campo "Verificar token" no Meta
-const WHATSAPP_TOKEN  = "EAAKf0evy6agBPTCfgdufgQg771L4oOZAPWE4UAdCt30ZBNOp6bA7CuPNDXFKrZAJUdaks7ZAKigEQsWDnKujIf2zsWPrGCpdmWelUqExpSsakTeZCgueZBYkQ3QzleRdiBZBEpQHxcW2BYlfrr6yQFf7oOFEplqpoU6Xuqw04iro3CvsIDMtNJEBfFRsTSrIYXKQAZDZD";
+const WHATSAPP_TOKEN  = "EAAKf0evy6agBPfc3BxZAtG8QAaGbdeSZAr3FKwgb4ZCZBrNmwqvJMcU34uqSpF7fbYSOOh0JusLFi5ZCWAwJuPFgnzwF8KmnSY96iPWZA1nlEdodj7su08VoXa4P5sRZAVxi70CXJZBT2DfNcAzwigZCI7di1ysTeiVkUGxOSZC5iXWmsjAFDIivFZC5zd6iEdm6fB9TwZDZD";
 const PHONE_NUMBER_ID = "725452820655578";  // ID do número
 
 if (!VERIFY_TOKEN || !WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
