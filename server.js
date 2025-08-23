@@ -1,93 +1,180 @@
+// server.js
+// Bot WhatsApp – Copy Digital
+// by você ;)  - pronto pra usar no Render
+
 const express = require("express");
-const bodyParser = require("body-parser");
 const fetch = require("node-fetch");
 
-const app = express().use(bodyParser.json());
+const app = express();
+app.use(express.json());
 
-// Configurações
-const VERIFY_TOKEN = "copydigital123"; // use a mesma string na verificação do webhook no Meta
-const WHATSAPP_TOKEN = "EAAKf0evy6agBPTBzr2ecxgccTPPl7bvi74AJZAypYSkPWeoacvHOwAXIdJEOCDswnGBpZBeYno7vYp0wygf235iAC7rWWeiOfpbEbryZBBZCt8sOwZC6KNsVC56ZCXMVzew23rkSTOWsmVKG9TDyjxoYyvl9MuCPgMGPIrUFJkHsKmo06nPyS013rZApe8VqARsOAZDZD";
-const PHONE_NUMBER_ID = "725458220655578";
+// ====== VARIÁVEIS DE AMBIENTE ======
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN "copydigital123";        // ex: "copydigital123"
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN "EAAKf0evy6agBPTBzr2ecxgccTPPl7bvi74AJZAypYSkPWeoacvHOwAXIdJEOCDswnGBpZBeYno7vYp0wygf235iAC7rWWeiOfpbEbryZBBZCt8sOwZC6KNsVC56ZCXMVzew23rkSTOWsmVKG9TDyjxoYyvl9MuCPgMGPIrUFJkHsKmo06nPyS013rZApe8VqARsOAZDZD";    // System User token (permanente)
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID "725458220655578";  // ex: "725458220655578"
 
-// Sessões simples em memória
-const sessions = new Map();
-
-// Função para enviar mensagens
-async function sendMessage(to, message) {
-  await fetch(`https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${WHATSAPP_TOKEN}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to: to,
-      type: "text",
-      text: { body: message }
-    })
-  });
+if (!VERIFY_TOKEN || !WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+  console.log("[AVISO] Faltam variáveis de ambiente: VERIFY_TOKEN, WHATSAPP_TOKEN, PHONE_NUMBER_ID");
 }
 
-// Rota de verificação (GET)
+// ====== HELPER: ENVIAR TEXTO ======
+async function sendText(to, text) {
+  const url = `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`;
+  const payload = {
+    messaging_product: "whatsapp",
+    to,
+    type: "text",
+    text: { preview_url: false, body: text },
+  };
+
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    console.error("[ERRO] Envio texto:", resp.status, err);
+  } else {
+    console.log("[OK] Texto enviado para", to);
+  }
+}
+
+// ====== HELPER: ENVIAR MENU (LIST) ======
+async function sendMenu(to) {
+  const url = `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`;
+  const payload = {
+    messaging_product: "whatsapp",
+    to,
+    type: "interactive",
+    interactive: {
+      type: "list",
+      header: { type: "text", text: "Copy Digital" },
+      body: {
+        text:
+          "Escolha uma opção abaixo 👇\n\n" +
+          "1️⃣ Tráfego Pago\n2️⃣ Landing Pages\n3️⃣ Automações",
+      },
+      footer: { text: "Equipe Copy Digital" },
+      action: {
+        button: "Ver opções",
+        sections: [
+          {
+            title: "Serviços",
+            rows: [
+              { id: "trafego", title: "Tráfego Pago", description: "Gestão de anúncios" },
+              { id: "landing", title: "Landing Pages", description: "Páginas que convertem" },
+              { id: "automacoes", title: "Automações", description: "Bots e integrações" },
+            ],
+          },
+        ],
+      },
+    },
+  };
+
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    console.error("[ERRO] Envio menu:", resp.status, err);
+  } else {
+    console.log("[OK] Menu enviado para", to);
+  }
+}
+
+// ====== WEBHOOK – VERIFICAÇÃO (GET) ======
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
-  if (mode && token === VERIFY_TOKEN) {
-    console.log("Webhook verificado com sucesso!");
-    res.status(200).send(challenge);
-  } else {
-    res.sendStatus(403);
+  if (mode === "subscribe" && token === VERIFY_TOKEN) {
+    console.log("[OK] Webhook verificado");
+    return res.status(200).send(challenge);
   }
+
+  console.log("[ERRO] Falha na verificação do webhook");
+  return res.sendStatus(403);
 });
 
-// Rota para receber mensagens (POST)
+// ====== WEBHOOK – RECEBER MENSAGENS (POST) ======
 app.post("/webhook", async (req, res) => {
-  const body = req.body;
+  try {
+    const body = req.body;
 
-  if (body.object) {
-    if (body.entry && body.entry[0].changes && body.entry[0].changes[0].value.messages) {
-      const phone_number = body.entry[0].changes[0].value.metadata.display_phone_number;
-      const message = body.entry[0].changes[0].value.messages[0];
-      const from = message.from; // Número do usuário
-      const msg_body = message.text ? message.text.body.trim().toLowerCase() : "";
+    if (body?.object === "whatsapp_business_account") {
+      const changes = body.entry?.[0]?.changes?.[0]?.value;
+      const messages = changes?.messages;
 
-      console.log(`Mensagem recebida de ${from}: ${msg_body}`);
+      if (messages && messages.length > 0) {
+        const msg = messages[0];
+        const from = msg.from; // número do usuário
 
-      if (!sessions.has(from)) {
-        sessions.set(from, { step: "menu" });
-        await sendMessage(from, 
-          "👋 Olá! Seja bem-vindo.\n\nEscolha uma das opções abaixo:\n\n1️⃣ Tráfego Pago\n2️⃣ Landing Pages\n3️⃣ Automações"
-        );
-      } else {
-        const session = sessions.get(from);
+        // Texto enviado
+        const text = msg.text?.body?.trim() || "";
 
-        if (session.step === "menu") {
-          if (msg_body === "1") {
-            await sendMessage(from, "🚀 Tráfego Pago:\nAjudamos sua empresa a atrair clientes com campanhas no Google, Meta e TikTok Ads.");
-          } else if (msg_body === "2") {
-            await sendMessage(from, "💻 Landing Pages:\nCriamos páginas de alta conversão para aumentar suas vendas.");
-          } else if (msg_body === "3") {
-            await sendMessage(from, "🤖 Automações:\nAutomatizamos processos para você economizar tempo e vender mais.");
-          } else {
-            await sendMessage(from, "❌ Opção inválida.\nDigite apenas: 1, 2 ou 3.");
-            return res.sendStatus(200);
+        // Respostas de lista/botão interativo
+        const listReplyId = msg.interactive?.list_reply?.id;
+        const buttonReplyId = msg.interactive?.button_reply?.id;
+
+        console.log("Mensagem recebida de", from, ":", text || listReplyId || buttonReplyId || "[interativo]");
+
+        // Regras simples:
+        if (listReplyId) {
+          // Usuário escolheu uma opção do menu
+          switch (listReplyId) {
+            case "trafego":
+              await sendText(from, "Perfeito! Vamos falar de Tráfego Pago. Qual é o seu objetivo principal?");
+              break;
+            case "landing":
+              await sendText(from, "Show! Landing Pages: prefere uma de captura ou de vendas?");
+              break;
+            case "automacoes":
+              await sendText(from, "Ótimo! Em quais canais você quer automatizar (WhatsApp, Email, etc.)?");
+              break;
+            default:
+              await sendText(from, "Opção recebida. Em que posso ajudar?");
           }
-
-          // Depois de responder, mostra novamente o menu
-          await sendMessage(from, "\nDigite 1️⃣, 2️⃣ ou 3️⃣ para voltar ao menu.");
+        } else if (buttonReplyId) {
+          await sendText(from, "Recebi seu clique. Já vou te direcionar! 😉");
+        } else {
+          // Texto livre
+          const lower = text.toLowerCase();
+          if (["oi", "olá", "ola", "bom dia", "boa tarde", "boa noite"].some(w => lower.includes(w))) {
+            await sendText(from, "Olá 👋 Tudo bem? Eu sou o assistente da Copy Digital.");
+            await sendMenu(from);
+          } else {
+            await sendText(from, `Recebi sua mensagem: “${text}”`);
+            await sendMenu(from);
+          }
         }
       }
+
+      return res.sendStatus(200);
     }
 
-    res.sendStatus(200);
-  } else {
-    res.sendStatus(404);
+    // não é evento do WhatsApp
+    return res.sendStatus(404);
+  } catch (e) {
+    console.error("[ERRO] webhook:", e);
+    return res.sendStatus(500);
   }
 });
 
-// Inicia servidor
+// ====== HEALTHCHECK ======
+app.get("/", (_req, res) => res.status(200).send("OK"));
+
+// ====== START ======
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+app.listen(PORT, () => console.log(`Bot rodando na porta ${PORT}`));
