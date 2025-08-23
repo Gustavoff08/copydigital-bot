@@ -1,131 +1,284 @@
-// server.js
-// Copia Digital Bot — WhatsApp Business API (token permanente)
-
+// server.js — Copy Digital Bot (saudação profissional + captura de nome e nicho)
 import express from "express";
-import fetch from "node-fetch";
 
 const app = express();
 app.use(express.json());
 
-// ===== Variáveis de ambiente =====
+// ===== ENV =====
 const PORT = process.env.PORT || 3000;
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN;         // ex.: "copydigital123"
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;     // token PERMANENTE (System User)
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;   // ex.: "7254528202655578"
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN;       // ex.: "copydigital123"
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;   // token PERMANENTE do System User
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID; // ex.: "7xxxxxxxxxxxxx"
 
 if (!VERIFY_TOKEN || !WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
-  console.warn(
-    "⚠️ Faltam variáveis de ambiente. Configure VERIFY_TOKEN, WHATSAPP_TOKEN e PHONE_NUMBER_ID no Render."
-  );
+  console.warn("⚠️ Configure VERIFY_TOKEN, WHATSAPP_TOKEN e PHONE_NUMBER_ID nas Environment vars do Render.");
 }
 
-// ===== Healthcheck =====
-app.get("/", (_req, res) => {
-  res.status(200).send("Copy Digital Bot up ✅");
-});
+// ===== SESSÕES (memória) =====
+/*
+  sessions.set(from, {
+    step: 'inicio' | 'aguardando_nome_nicho' | 'menu' | 'email' | 'fim',
+    nome, nicho, email, servico
+  })
+*/
+const sessions = new Map();
 
-// ===== Verificação do webhook (GET) =====
+// ===== HELPERS =====
+const api = (path) => `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}${path}`;
+const norm = (t) => (t || "").toLowerCase().trim();
+const isEmail = (t) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((t || "").trim());
+
+async function sendText(to, body) {
+  const r = await fetch(api("/messages"), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to,
+      type: "text",
+      text: { preview_url: false, body },
+    }),
+  });
+  if (!r.ok) console.error("❌ Envio texto:", r.status, await r.text());
+}
+
+async function sendButtons(to, { header, body, footer, buttons }) {
+  const payload = {
+    messaging_product: "whatsapp",
+    to,
+    type: "interactive",
+    interactive: {
+      type: "button",
+      ...(header ? { header: { type: "text", text: header } } : {}),
+      body: { text: body },
+      ...(footer ? { footer: { text: footer } } : {}),
+      action: {
+        buttons: buttons.map((b) => ({
+          type: "reply",
+          reply: { id: b.id, title: b.title.slice(0, 20) },
+        })),
+      },
+    },
+  };
+  const r = await fetch(api("/messages"), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) console.error("❌ Envio botões:", r.status, await r.text());
+}
+
+// ===== HEALTH =====
+app.get("/", (_req, res) => res.status(200).send("Copy Digital Bot up ✅"));
+
+// ===== WEBHOOK VERIFY (GET) =====
 app.get("/webhook", (req, res) => {
   try {
     const mode = req.query["hub.mode"];
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
-
     if (mode === "subscribe" && token === VERIFY_TOKEN) {
       console.log("✅ WEBHOOK_VERIFIED");
-      return res.status(200).send(challenge); // devolve o 9999 do Meta
+      return res.status(200).send(challenge);
     }
     return res.sendStatus(403);
   } catch (e) {
-    console.error("❌ Erro na verificação do webhook:", e);
+    console.error("❌ Verify error:", e);
     return res.sendStatus(500);
   }
 });
 
-// ===== Recebimento de mensagens (POST) =====
+// ===== WEBHOOK RECEIVE (POST) =====
 app.post("/webhook", async (req, res) => {
-  // Confirma o recebimento para o Meta o mais rápido possível
-  res.sendStatus(200);
-
+  res.sendStatus(200); // responde rápido ao Meta
   try {
-    // Log bruto do evento (útil para depuração)
-    console.log("📩 Evento recebido:", JSON.stringify(req.body, null, 2));
-
     const entry = req.body?.entry?.[0];
-    const changes = entry?.changes?.[0];
-    const value = changes?.value;
-    const messages = value?.messages;
+    const change = entry?.changes?.[0];
+    const value = change?.value;
+    const msg = value?.messages?.[0];
+    if (!msg) return;
 
-    if (!messages || !messages[0]) return; // nada a processar
+    const from = msg.from;
+    const profileName = value?.contacts?.[0]?.profile?.name || "";
+    const session = sessions.get(from) || { step: "inicio" };
 
-    const msg = messages[0];
-    const from = msg.from; // número do cliente (sem +)
-    let userText = "";
+    // Texto ou interação
+    const incomingText =
+      msg.type === "text"
+        ? msg.text?.body?.trim()
+        : msg.type === "interactive"
+        ? (msg.interactive?.button_reply?.id || msg.interactive?.list_reply?.id || "")
+        : "";
 
-    // Tipos comuns de mensagem
-    if (msg.type === "text") {
-      userText = msg.text?.body?.trim() || "";
-    } else if (msg.type === "interactive") {
-      const inter = msg.interactive;
-      userText =
-        inter?.button_reply?.title ||
-        inter?.list_reply?.title ||
-        inter?.nfm_reply?.response_json ||
-        "";
-    } else if (msg.type === "reaction") {
-      userText = `Reagiu com: ${msg.reaction?.emoji || ""}`;
-    } else {
-      userText = `[${msg.type}]`;
+    const n = norm(incomingText);
+
+    // ---------- Fluxo: saudação -> pedir nome + nicho ----------
+    if (session.step === "inicio") {
+      // detecta saudações comuns
+      const isGreeting = ["oi","olá","ola","hey","eae","boa tarde","bom dia","boa noite"].includes(n);
+      session.step = "aguardando_nome_nicho";
+      if (!session.nome && profileName) session.nome = profileName;
+      sessions.set(from, session);
+
+      if (isGreeting) {
+        await sendText(
+          from,
+          "👋 Olá, tudo bem?\n" +
+          "Sou o assistente da *Copy Digital*.\n\n" +
+          "Para iniciarmos a conversa, me fale por favor:\n" +
+          "➡️ Seu *nome*\n" +
+          "➡️ E o *nicho/área* em que você trabalha\n\n" +
+          "Assim consigo direcionar melhor o atendimento 😉"
+        );
+      } else {
+        await sendText(
+          from,
+          "Antes de continuarmos, pode me dizer seu *nome* e o *nicho/área* em que você atua? 🙂"
+        );
+      }
+      return;
     }
 
-    console.log(`💬 De ${from}: ${userText}`);
+    if (session.step === "aguardando_nome_nicho") {
+      if (!incomingText || incomingText.length < 3) {
+        await sendText(from, "Pode me enviar seu *nome* e o *nicho* em que trabalha? Ex.: *Ana — Moda Feminina*");
+        return;
+      }
 
-    // Resposta simples: ecoa o que o usuário mandou
-    const resposta =
-      userText && userText !== "[unsupported]"
-        ? `Você disse: ${userText}`
-        : "Oi! 👋 Recebi sua mensagem. Como posso ajudar?";
+      // (Opcional) tentativa simples de separar nome e nicho por hífen/traço
+      const parts = incomingText.split(/[-–—]| \| /).map(s => s.trim()).filter(Boolean);
+      if (parts.length >= 2) {
+        session.nome = session.nome || parts[0];
+        session.nicho = parts.slice(1).join(" - ");
+      } else {
+        // se não conseguiu separar, guarda tudo em nomeNicho e vai em frente
+        session.nome = session.nome || incomingText;
+        session.nicho = session.nicho || "";
+      }
 
-    await sendText(from, resposta);
+      session.step = "menu";
+      sessions.set(from, session);
+
+      await sendButtons(from, {
+        header: "🤖 Copy Digital",
+        body:
+          `Perfeito, *${session.nome || "obrigado"}*! 🚀\n` +
+          (session.nicho ? `Nicho: *${session.nicho}*\n\n` : "\n") +
+          "Agora me diga como posso te ajudar hoje:",
+        footer: "© Copy Digital",
+        buttons: [
+          { id: "menu_servicos", title: "1) Serviços" },
+          { id: "menu_precos",   title: "2) Preços"   },
+          { id: "menu_suporte",  title: "3) Suporte"  },
+        ],
+      });
+      return;
+    }
+
+    // ---------- Menu / Pós identificação ----------
+    if (session.step === "menu") {
+      // atalhos por dígito
+      if (["1","2","3"].includes(n)) {
+        const map = { "1":"menu_servicos", "2":"menu_precos", "3":"menu_suporte" };
+        return handlePostback(from, map[n], session);
+      }
+      // botões
+      if (n.startsWith("menu_")) {
+        return handlePostback(from, n, session);
+      }
+      // se digitou algo diferente
+      await sendText(from, "Para continuar, toque nos botões ou responda *1*, *2* ou *3* 😉");
+      return;
+    }
+
+    // (Opcional) Coleta de e-mail se for parte do seu fluxo
+    if (session.step === "email") {
+      if (!isEmail(incomingText)) {
+        await sendText(from, "Esse e-mail parece inválido. Envie no formato *nome@dominio.com*.");
+        return;
+      }
+      session.email = incomingText.trim();
+      session.step = "fim";
+      sessions.set(from, session);
+      await sendText(
+        from,
+        `✅ Obrigado, *${session.nome}*!\n` +
+        `Resumo:\n• Nicho: *${session.nicho || "-"}*\n• E-mail: *${session.email}*\n\n` +
+        `Em breve nossa equipe entra em contato.`
+      );
+      return;
+    }
+
+    // fallback
+    await sendText(from, "Digite *oi* para começar ou *menu* para ver opções.");
   } catch (e) {
-    console.error("❌ Erro processando mensagem:", e);
+    console.error("❌ Erro no webhook:", e);
   }
 });
 
-// ===== Helper: enviar texto =====
-async function sendText(to, text) {
-  try {
-    const url = `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`;
+// ===== POSTBACKS =====
+async function handlePostback(from, payload, session) {
+  switch (payload) {
+    case "menu_servicos":
+      session.servico = undefined;
+      sessions.set(from, session);
+      await sendButtons(from, {
+        header: "🧰 Serviços",
+        body: "Escolha um serviço para continuar:",
+        buttons: [
+          { id: "svc_trafego",   title: "Tráfego Pago" },
+          { id: "svc_landing",   title: "Landing Pages" },
+          { id: "svc_automacao", title: "Automações" },
+        ],
+      });
+      break;
 
-    const body = {
-      messaging_product: "whatsapp",
-      to,
-      type: "text",
-      text: { body: text },
-    };
+    case "menu_precos":
+      await sendText(from,
+        "*Planos & Preços*\n" +
+        "• Basic — Landing + suporte\n" +
+        "• Pro — Landing + tráfego + automações\n" +
+        "• Premium — Tudo incluso + consultoria\n\n" +
+        "Se quiser orçamento, me diga seu *e-mail* 🙂"
+      );
+      session.step = "email";
+      sessions.set(from, session);
+      break;
 
-    const r = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+    case "menu_suporte":
+      await sendText(from, "Conte pra mim sua dúvida. Se preferir, digite *humano* para falar com um atendente.");
+      break;
 
-    if (!r.ok) {
-      const err = await r.text();
-      console.error("❌ Erro ao enviar mensagem:", r.status, err);
-    } else {
-      const ok = await r.json();
-      console.log("✅ Mensagem enviada:", JSON.stringify(ok));
+    case "svc_trafego":
+    case "svc_landing":
+    case "svc_automacao": {
+      const map = {
+        svc_trafego: "Tráfego Pago",
+        svc_landing: "Landing Pages",
+        svc_automacao: "Automações",
+      };
+      session.servico = map[payload];
+      sessions.set(from, session);
+      await sendText(from,
+        `Ótimo! *${session.servico}*.\n` +
+        `Para enviarmos uma proposta, pode me informar seu *e-mail*?`
+      );
+      session.step = "email";
+      break;
     }
-  } catch (e) {
-    console.error("❌ Falha no fetch de envio:", e);
+
+    default:
+      await sendText(from, "Opção não reconhecida. Digite *menu* para ver as opções.");
   }
 }
 
-// ===== Start =====
+// ===== START =====
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`🚀 Bot rodando na porta ${PORT}`);
 });
