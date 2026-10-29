@@ -25,11 +25,12 @@
                         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
                     },
                     colors: {
-                        ink: '#0A0A0A',
-                        graphite: '#1C1C1C',
-                        paper: '#EAEAE5',
-                        pigment: '#2A3BFF',
-                        highlighter: '#CCFF00',
+                        ink: '#1C123D',
+                        graphite: '#242238',
+                        paper: '#F3F2F8',
+                        stone: { 50: '#F8F7FC', 100: '#F3F2F8', 200: '#E6E4F0', 300: '#D3D0E2', 400: '#A29EB8', 500: '#77738F', 600: '#565370', 700: '#3E3B57', 800: '#2E2B45', 900: '#242238' },
+                        pigment: '#5B3DF5',
+                        highlighter: '#B9A6FF',
                     },
                     animation: {
                         'spin-slow': 'spin 14s linear infinite',
@@ -48,15 +49,17 @@
            0. TOKENS
            ===================================================================== */
         :root {
-            --ink: #0A0A0A;
-            --graphite: #1C1C1C;
-            --paper: #EAEAE5;
+            --ink: #1C123D;
+            --graphite: #242238;
+            --paper: #F3F2F8;
+            --tech-gray: #F3F2F8;
+            --violet: #7B61FF;
+            --lavender: #B9A6FF;
             --white: #FFFFFF;
-            --pigment: #2A3BFF;
-            --pigment-soft: #8C97FF;
-            --highlighter: #CCFF00;
-            --wood: #B8895B;
-            --border: #D6D3D1;
+            --pigment: #5B3DF5;
+            --pigment-soft: #7B61FF;
+            --highlighter: #B9A6FF;
+                        --border: #D3D0E2;
             --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
             --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
             --mouse-x: 50%;
@@ -125,17 +128,17 @@
         .text-glass { color: #fff; mix-blend-mode: difference; }                       /* branco "vazado" sobre qualquer fundo */
         .text-outline { color: transparent; -webkit-text-fill-color: transparent; -webkit-text-stroke: 1.5px currentColor; }  /* contorno, miolo transparente */
         .text-outline-white { color: transparent; -webkit-text-fill-color: transparent; -webkit-text-stroke: 1.5px #fff; }
-        .gradient-text { background: linear-gradient(135deg, #0A0A0A 0%, #78716C 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+        .gradient-text { background: linear-gradient(135deg, #1C123D 0%, #77738F 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
         .gradient-text-light { background: linear-gradient(180deg, #fff 40%, #666 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
         .text-shimmer {
-            background: linear-gradient(110deg, #0A0A0A 35%, #8C97FF 50%, #0A0A0A 65%);
+            background: linear-gradient(110deg, #1C123D 35%, #7B61FF 50%, #1C123D 65%);
             background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
             animation: textshine 4s linear infinite;
         }
         @keyframes textshine { from { background-position: 150% 0; } to { background-position: -100% 0; } }
         .text-fill-wipe {
-            color: transparent; -webkit-text-fill-color: transparent; -webkit-text-stroke: 1.2px #0A0A0A;
-            background: linear-gradient(#0A0A0A, #0A0A0A) no-repeat 0 0 / 0% 100%; -webkit-background-clip: text; background-clip: text;
+            color: transparent; -webkit-text-fill-color: transparent; -webkit-text-stroke: 1.2px #1C123D;
+            background: linear-gradient(#1C123D, #1C123D) no-repeat 0 0 / 0% 100%; -webkit-background-clip: text; background-clip: text;
             transition: background-size 1s var(--ease-out);
         }
         .text-fill-wipe:hover, .reveal.active .text-fill-wipe.auto { background-size: 100% 100%; }
@@ -144,7 +147,7 @@
            3. FUNDOS ANIMADOS DE SEÇÃO  (.sec + .sec-*)
            ===================================================================== */
         .sec { position: relative; isolation: isolate; overflow: hidden;
-            --ln: rgba(10,10,10,.05); --blob1: rgba(42,59,255,.10); --blob2: rgba(204,255,0,.20); --blob3: rgba(120,113,108,.16); }
+            --ln: rgba(28,18,61,.05); --blob1: rgba(91,61,245,.10); --blob2: rgba(185,166,255,.20); --blob3: rgba(119,115,143,.16); }
         .sec::before, .sec::after { content: ''; position: absolute; pointer-events: none; z-index: -1; }
 
         /* aurora: blobs flutuando + grade fina */
@@ -167,7 +170,7 @@
         @keyframes pulse-soft { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
 
         /* dots: pontilhado com varredura de luz */
-        .sec-dots::before { inset: 0; background-size: 22px 22px; background-image: radial-gradient(circle, rgba(10,10,10,.22) 1px, transparent 1.2px);
+        .sec-dots::before { inset: 0; background-size: 22px 22px; background-image: radial-gradient(circle, rgba(28,18,61,.22) 1px, transparent 1.2px);
             -webkit-mask-image: linear-gradient(110deg, transparent 20%, #000 45%, transparent 70%); mask-image: linear-gradient(110deg, transparent 20%, #000 45%, transparent 70%);
             -webkit-mask-size: 260% 100%; mask-size: 260% 100%; animation: dotsweep 9s ease-in-out infinite; }
         .sec-dots::after { inset: 0; background: radial-gradient(60% 50% at 85% 0%, var(--blob2), transparent 70%); }
@@ -176,7 +179,7 @@
         /* beams: feixes diagonais */
         .sec-beams::before { inset: -50% -10%; background: repeating-linear-gradient(115deg, transparent 0 70px, var(--ln) 70px 71px); }
         .sec-beams::after { top: -20%; bottom: -20%; width: 35%; left: -40%; transform: skewX(-18deg);
-            background: linear-gradient(90deg, transparent, rgba(42,59,255,.08), rgba(204,255,0,.16), transparent); filter: blur(10px); animation: beam 11s ease-in-out infinite; }
+            background: linear-gradient(90deg, transparent, rgba(91,61,245,.08), rgba(185,166,255,.16), transparent); filter: blur(10px); animation: beam 11s ease-in-out infinite; }
         @keyframes beam { 0% { left: -40%; } 100% { left: 120%; } }
 
         /* rings: anéis de radar / tinta pingando */
@@ -188,7 +191,7 @@
         @keyframes ringspin { to { transform: translate(-50%, -50%) rotate(360deg) scale(1.04); } }
 
         /* variante escura */
-        .sec-dark { background: #0A0A0A; color: #e5e5e5; --ln: rgba(255,255,255,.07); --blob1: rgba(42,59,255,.34); --blob2: rgba(204,255,0,.10); --blob3: rgba(255,255,255,.08); }
+        .sec-dark { background: #1C123D; color: #e5e5e5; --ln: rgba(255,255,255,.07); --blob1: rgba(91,61,245,.34); --blob2: rgba(185,166,255,.10); --blob3: rgba(255,255,255,.08); }
         .sec-dark.sec-dots::before { background-image: radial-gradient(circle, rgba(255,255,255,.3) 1px, transparent 1.2px); }
 
         /* =====================================================================
@@ -199,16 +202,16 @@
         .beam-button::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; z-index: -1;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); transition: left .6s; }
         .beam-button:hover::before { left: 100%; }
-        .beam-button.light::before { background: linear-gradient(90deg, transparent, rgba(42,59,255,.18), transparent); }
+        .beam-button.light::before { background: linear-gradient(90deg, transparent, rgba(91,61,245,.18), transparent); }
         .beam-button.auto::after { content: ''; position: absolute; inset: 0; z-index: -1; width: 40%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent); animation: shimmer 3.2s ease-in-out infinite; }
 
         .glow-on-hover { transition: all .3s ease; }
-        .glow-on-hover:hover { box-shadow: 0 0 30px rgba(28,28,28,.18), 0 0 60px rgba(42,59,255,.15); transform: translateY(-2px); }
-        .glow-pigment:hover { box-shadow: 0 0 0 1px rgba(42,59,255,.4), 0 10px 40px rgba(42,59,255,.35); }
+        .glow-on-hover:hover { box-shadow: 0 0 30px rgba(36,34,56,.18), 0 0 60px rgba(91,61,245,.15); transform: translateY(-2px); }
+        .glow-pigment:hover { box-shadow: 0 0 0 1px rgba(91,61,245,.4), 0 10px 40px rgba(91,61,245,.35); }
         .glow-white:hover { box-shadow: 0 0 40px rgba(255,255,255,.55); transform: translateY(-2px); }
         .btn-pulse { animation: btnpulse 2.4s ease-out infinite; }
-        @keyframes btnpulse { 0% { box-shadow: 0 0 0 0 rgba(42,59,255,.45); } 80%,100% { box-shadow: 0 0 0 18px rgba(42,59,255,0); } }
+        @keyframes btnpulse { 0% { box-shadow: 0 0 0 0 rgba(91,61,245,.45); } 80%,100% { box-shadow: 0 0 0 18px rgba(91,61,245,0); } }
 
         .btn-ink-fill { position: relative; overflow: hidden; isolation: isolate; transition: color .5s var(--ease-out); }
         .btn-ink-fill::before { content: ''; position: absolute; left: 50%; top: 100%; width: 160%; aspect-ratio: 1; border-radius: 50%; background: var(--ink);
@@ -228,10 +231,10 @@
 
         .flashlight-card { position: relative; background: rgba(255,255,255,.55); }
         .flashlight-card::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .5s;
-            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(42,59,255,.10), transparent 40%); }
+            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(91,61,245,.10), transparent 40%); }
         .flashlight-card:hover::before { opacity: 1; }
         .flashlight-card::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0; transition: opacity .5s; border: 1px solid transparent;
-            background: radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), rgba(10,10,10,.55), transparent 40%) border-box;
+            background: radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), rgba(28,18,61,.55), transparent 40%) border-box;
             -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
         .flashlight-card:hover::after { opacity: 1; }
         .sec-dark .flashlight-card { background: rgba(255,255,255,.02); }
@@ -242,10 +245,10 @@
         .glow-border::before { content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
             background: conic-gradient(from var(--angle), transparent 0 65%, var(--pigment), var(--highlighter), transparent);
             -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: angle 5s linear infinite; }
-        .glow-border::after { content: ''; position: absolute; inset: 10%; z-index: -1; border-radius: inherit; background: conic-gradient(from var(--angle), transparent, rgba(42,59,255,.35), rgba(204,255,0,.35), transparent); filter: blur(30px); opacity: .6; animation: angle 5s linear infinite; }
+        .glow-border::after { content: ''; position: absolute; inset: 10%; z-index: -1; border-radius: inherit; background: conic-gradient(from var(--angle), transparent, rgba(91,61,245,.35), rgba(185,166,255,.35), transparent); filter: blur(30px); opacity: .6; animation: angle 5s linear infinite; }
 
         .glass-panel { background: rgba(255,255,255,.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.7); }
-        .glass-dark { background: rgba(10,10,10,.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.18); }
+        .glass-dark { background: rgba(28,18,61,.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.18); }
 
         .tilt { transform-style: preserve-3d; transition: transform .25s ease-out; will-change: transform; }
 
@@ -254,34 +257,34 @@
            ===================================================================== */
         .field { position: relative; }
         .field input, .field textarea, .field select {
-            width: 100%; background: #fff; border: 1px solid #D6D3D1; border-radius: .75rem; padding: 1.4rem 1rem .5rem; font-size: 14px; line-height: 20px; color: var(--graphite); outline: none;
+            width: 100%; background: #fff; border: 1px solid #D3D0E2; border-radius: .75rem; padding: 1.4rem 1rem .5rem; font-size: 14px; line-height: 20px; color: var(--graphite); outline: none;
             transition: border-color .3s, box-shadow .3s, background .3s; }
-        .field label { position: absolute; left: 1rem; top: 1rem; font-size: 14px; color: #78716C; pointer-events: none; transition: all .3s var(--ease-out); transform-origin: left top; }
-        .field input:focus ~ label, .field input:not(:placeholder-shown) ~ label, .field textarea:focus ~ label, .field textarea:not(:placeholder-shown) ~ label, .field select ~ label { transform: translateY(-.6rem) scale(.78); color: #57534E; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .08em; }
-        .field input:hover, .field textarea:hover, .field select:hover { border-color: #A8A29E; }
-        .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgba(42,59,255,.10), 0 8px 30px rgba(42,59,255,.10); }
+        .field label { position: absolute; left: 1rem; top: 1rem; font-size: 14px; color: #77738F; pointer-events: none; transition: all .3s var(--ease-out); transform-origin: left top; }
+        .field input:focus ~ label, .field input:not(:placeholder-shown) ~ label, .field textarea:focus ~ label, .field textarea:not(:placeholder-shown) ~ label, .field select ~ label { transform: translateY(-.6rem) scale(.78); color: #565370; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .08em; }
+        .field input:hover, .field textarea:hover, .field select:hover { border-color: #A29EB8; }
+        .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgba(91,61,245,.10), 0 8px 30px rgba(91,61,245,.10); }
         .field .beam-line { position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; border-radius: 2px; background: linear-gradient(90deg, var(--pigment), var(--highlighter)); transform: scaleX(0); transition: transform .5s var(--ease-out); }
         .field input:focus ~ .beam-line, .field textarea:focus ~ .beam-line { transform: scaleX(1); }
         .field.error input { border-color: #DC2626; box-shadow: 0 0 0 4px rgba(220,38,38,.10); animation: shake .5s; }
         .field.success input { border-color: #16A34A; box-shadow: 0 0 0 4px rgba(22,163,74,.10); }
-        .field input:disabled { background: #F5F5F4; color: #A8A29E; border-style: dashed; cursor: not-allowed; }
+        .field input:disabled { background: #F3F2F8; color: #A29EB8; border-style: dashed; cursor: not-allowed; }
         @keyframes shake { 10%,90% { transform: translate3d(-1px,0,0); } 20%,80% { transform: translate3d(2px,0,0); } 30%,50%,70% { transform: translate3d(-4px,0,0); } 40%,60% { transform: translate3d(4px,0,0); } }
 
         .switch { position: relative; width: 44px; height: 24px; display: inline-block; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .switch span { position: absolute; inset: 0; border-radius: 999px; background: #D6D3D1; transition: .4s var(--ease-out); cursor: pointer; }
+        .switch span { position: absolute; inset: 0; border-radius: 999px; background: #D3D0E2; transition: .4s var(--ease-out); cursor: pointer; }
         .switch span::before { content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25); transition: .4s var(--ease-elastic); }
-        .switch input:checked + span { background: var(--ink); box-shadow: 0 0 20px rgba(42,59,255,.35); }
+        .switch input:checked + span { background: var(--ink); box-shadow: 0 0 20px rgba(91,61,245,.35); }
         .switch input:checked + span::before { transform: translateX(20px); }
         .switch input:focus-visible + span { outline: 2px solid var(--pigment); outline-offset: 2px; }
 
-        .check { appearance: none; width: 20px; height: 20px; border: 1px solid #A8A29E; border-radius: 6px; display: inline-grid; place-content: center; cursor: pointer; transition: .3s; background: #fff; }
+        .check { appearance: none; width: 20px; height: 20px; border: 1px solid #A29EB8; border-radius: 6px; display: inline-grid; place-content: center; cursor: pointer; transition: .3s; background: #fff; }
         .check::after { content: ''; width: 10px; height: 10px; clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); background: #fff; transform: scale(0); transition: transform .3s var(--ease-elastic); }
         .check:checked { background: var(--ink); border-color: var(--ink); }
         .check:checked::after { transform: scale(1); }
         .check:focus-visible { outline: 2px solid var(--pigment); outline-offset: 2px; }
 
-        input[type=range].range { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: #E7E5E4; border-radius: 4px; outline: none; }
+        input[type=range].range { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: #E6E4F0; border-radius: 4px; outline: none; }
         input[type=range].range::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--ink), 0 4px 12px rgba(0,0,0,.3); cursor: pointer; transition: transform .2s; }
         input[type=range].range::-webkit-slider-thumb:hover { transform: scale(1.25); }
 
@@ -303,12 +306,12 @@
         [data-tip-pos="bottom"]::before { bottom: auto; top: calc(100% + 5px); transform: translate(-50%, -6px) rotate(45deg); }
         [data-tip-pos="bottom"]:hover::after { transform: translate(-50%, 0) scale(1); }
         [data-tip-pos="bottom"]:hover::before { transform: translate(-50%, 0) rotate(45deg); }
-        [data-tip-style="light"]::after { background: #fff; color: var(--ink); border: 1px solid #E7E5E4; }
-        [data-tip-style="light"]::before { background: #fff; border-right: 1px solid #E7E5E4; border-bottom: 1px solid #E7E5E4; }
-        [data-tip-style="pigment"]::after { background: var(--pigment); box-shadow: 0 10px 30px rgba(42,59,255,.45); }
+        [data-tip-style="light"]::after { background: #fff; color: var(--ink); border: 1px solid #E6E4F0; }
+        [data-tip-style="light"]::before { background: #fff; border-right: 1px solid #E6E4F0; border-bottom: 1px solid #E6E4F0; }
+        [data-tip-style="pigment"]::after { background: var(--pigment); box-shadow: 0 10px 30px rgba(91,61,245,.45); }
         [data-tip-style="pigment"]::before { background: var(--pigment); }
 
-        .modal-backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(10,10,10,.45); backdrop-filter: blur(0px); opacity: 0; pointer-events: none; transition: opacity .4s, backdrop-filter .4s; display: grid; place-items: center; padding: 1rem; }
+        .modal-backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(28,18,61,.45); backdrop-filter: blur(0px); opacity: 0; pointer-events: none; transition: opacity .4s, backdrop-filter .4s; display: grid; place-items: center; padding: 1rem; }
         .modal-backdrop.open { opacity: 1; pointer-events: auto; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         .modal-panel { transform: translateY(30px) scale(.94); opacity: 0; transition: transform .6s var(--ease-out), opacity .4s; }
         .modal-backdrop.open .modal-panel { transform: none; opacity: 1; }
@@ -318,10 +321,10 @@
         .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); transform-origin: left; }
         .nav-link.active { color: var(--ink); }
 
-        #scroll-progress { position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 120; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, var(--ink), var(--pigment), var(--highlighter)); box-shadow: 0 0 12px rgba(42,59,255,.6); }
+        #scroll-progress { position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 120; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, var(--ink), var(--pigment), var(--highlighter)); box-shadow: 0 0 12px rgba(91,61,245,.6); }
 
         #cursor-glow { position: fixed; left: 0; top: 0; width: 420px; height: 420px; margin: -210px 0 0 -210px; border-radius: 50%; pointer-events: none; z-index: 1;
-            background: radial-gradient(closest-side, rgba(42,59,255,.10), rgba(204,255,0,.05) 55%, transparent); opacity: 0; transition: opacity .6s; mix-blend-mode: multiply; }
+            background: radial-gradient(closest-side, rgba(91,61,245,.10), rgba(185,166,255,.05) 55%, transparent); opacity: 0; transition: opacity .6s; mix-blend-mode: multiply; }
 
         /* =====================================================================
            7. ÍCONES ANIMADOS (SVG inline)
@@ -356,11 +359,11 @@
         @keyframes swing { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
 
         /* spec tables */
-        .spec td, .spec th { padding: .6rem .9rem; border-bottom: 1px solid #E7E5E4; text-align: left; vertical-align: top; }
-        .spec th { font: 500 11px/1 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .1em; color: #78716C; background: rgba(245,245,244,.7); }
-        .spec td { font: 400 12px/1.5 'JetBrains Mono', monospace; color: #44403C; }
-        .sec-dark .spec td, .spec-dark td { color: #d6d3d1; border-color: rgba(255,255,255,.1); }
-        .sec-dark .spec th, .spec-dark th { background: rgba(255,255,255,.05); color: #a8a29e; border-color: rgba(255,255,255,.1); }
+        .spec td, .spec th { padding: .6rem .9rem; border-bottom: 1px solid #E6E4F0; text-align: left; vertical-align: top; }
+        .spec th { font: 500 11px/1 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .1em; color: #77738F; background: rgba(245,245,244,.7); }
+        .spec td { font: 400 12px/1.5 'JetBrains Mono', monospace; color: #3E3B57; }
+        .sec-dark .spec td, .spec-dark td { color: #D3D0E2; border-color: rgba(255,255,255,.1); }
+        .sec-dark .spec th, .spec-dark th { background: rgba(255,255,255,.05); color: #A29EB8; border-color: rgba(255,255,255,.1); }
         .code { font: 400 12px/1.7 'JetBrains Mono', monospace; }
 
         .swatch { transition: transform .5s var(--ease-out), box-shadow .5s; cursor: pointer; }
@@ -633,7 +636,7 @@
             <div class="p-8 md:p-12 border-b border-stone-300 bg-stone-50/60 backdrop-blur-sm">
                 <span class="text-xs font-mono uppercase text-stone-500 block mb-2 reveal">02 / Fundamentos</span>
                 <h2 class="text-4xl md:text-5xl font-medium tracking-tight" data-split>Sistema de cores</h2>
-                <p class="mt-4 text-stone-500 max-w-2xl text-sm reveal">Base branca, tinta preta e neutros de pedra. Um único acento (pigmento) e um marca-texto decorativo. Clique em um cartão para copiar o hex. As razões de contraste são calculadas ao vivo.</p>
+                <p class="mt-4 text-stone-500 max-w-2xl text-sm reveal">Paleta YVI: base branca, Roxo YVI como cor principal, Violeta profundo para fundos premium e Lavanda digital nos detalhes. Cinzas com leve tom violeta. Clique em um cartão para copiar o hex. As razões de contraste são calculadas ao vivo.</p>
             </div>
 
             <div id="color-groups"></div>
@@ -657,23 +660,23 @@
                     <thead><tr><th>Contexto</th><th>Default</th><th>Hover</th><th>Active</th><th>Disabled</th><th>Regra</th></tr></thead>
                     <tbody>
                         <tr><td class="font-bold">Texto</td>
-                            <td><span class="text-stone-900 text-sm font-sans">Ink #1C1C1C</span></td>
+                            <td><span class="text-stone-900 text-sm font-sans">Grafite #242238</span></td>
                             <td><span class="text-stone-500 text-sm font-sans">Stone 500</span></td>
-                            <td><span class="text-pigment text-sm font-sans">Pigment</span></td>
+                            <td><span class="text-pigment text-sm font-sans">Roxo YVI</span></td>
                             <td><span class="text-stone-300 text-sm font-sans">Stone 300</span></td>
-                            <td>Corpo em graphite; secundário em stone-500/600; link ativo em pigment.</td></tr>
+                            <td>Corpo em graphite; secundário em stone-500/600; link ativo em Roxo YVI.</td></tr>
                         <tr><td class="font-bold">Background</td>
                             <td><span class="inline-block px-3 py-1.5 rounded bg-white border border-stone-300 font-sans">White</span></td>
                             <td><span class="inline-block px-3 py-1.5 rounded bg-stone-100 border border-stone-300 font-sans">Stone 100</span></td>
-                            <td><span class="inline-block px-3 py-1.5 rounded bg-ink text-white font-sans">Ink</span></td>
+                            <td><span class="inline-block px-3 py-1.5 rounded bg-ink text-white font-sans">Violeta</span></td>
                             <td><span class="inline-block px-3 py-1.5 rounded bg-stone-100 text-stone-300 font-sans">Stone 100</span></td>
-                            <td>Superfícies brancas; hover escurece 1 degrau; ação primária inverte para ink.</td></tr>
+                            <td>Superfícies brancas; hover escurece 1 degrau; ação primária inverte para violeta profundo.</td></tr>
                         <tr><td class="font-bold">Borda</td>
                             <td><span class="inline-block px-3 py-1.5 rounded border border-stone-300 font-sans">Stone 300</span></td>
                             <td><span class="inline-block px-3 py-1.5 rounded border border-stone-500 font-sans">Stone 500</span></td>
-                            <td><span class="inline-block px-3 py-1.5 rounded border border-ink font-sans">Ink</span></td>
+                            <td><span class="inline-block px-3 py-1.5 rounded border border-ink font-sans">Violeta</span></td>
                             <td><span class="inline-block px-3 py-1.5 rounded border border-dashed border-stone-300 text-stone-300 font-sans">Dashed</span></td>
-                            <td>Hairline 1px; foco = ink + halo pigment 10%; disabled = tracejado.</td></tr>
+                            <td>Hairline 1px; foco = violeta profundo + halo Roxo YVI 10%; disabled = tracejado.</td></tr>
                         <tr><td class="font-bold">Feedback</td>
                             <td><span class="inline-block px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-sans">Success</span></td>
                             <td><span class="inline-block px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-sans">Warning</span></td>
@@ -795,7 +798,7 @@
                     </div>
                     <!-- Card glow-border + tilt -->
                     <div class="reveal-scale delay-300 [perspective:1000px]">
-                        <div class="glow-border tilt p-8 min-h-[380px] flex flex-col justify-between shadow-[0_30px_80px_-30px_rgba(42,59,255,.35)]" data-tilt>
+                        <div class="glow-border tilt p-8 min-h-[380px] flex flex-col justify-between shadow-[0_30px_80px_-30px_rgba(91,61,245,.35)]" data-tilt>
                             <div class="flex justify-between items-start"><span class="px-2.5 py-1 rounded-full bg-ink text-white text-[10px] font-mono uppercase flex items-center gap-1.5"><span class="pulse-dot text-highlighter"></span> Novo</span><span class="text-[11px] font-mono text-stone-400">TILT 3D</span></div>
                             <div style="transform:translateZ(40px)">
                                 <p class="text-xs font-mono text-stone-500 mb-1">R$</p>
@@ -820,7 +823,7 @@
                         <span class="px-3 py-1 border border-stone-900 rounded-full text-xs font-mono uppercase">Outline</span>
                         <span class="px-3 py-1 bg-ink text-white rounded-full text-xs font-mono uppercase">Solid</span>
                         <span class="px-3 py-1 bg-stone-900 rounded-full text-xs font-mono uppercase text-white flex items-center gap-2"><span class="pulse-dot text-emerald-400"></span> Online</span>
-                        <span class="px-3 py-1 bg-highlighter text-ink rounded-full text-xs font-mono uppercase font-medium -rotate-2 hover:rotate-0 transition-transform">Marca-texto</span>
+                        <span class="px-3 py-1 bg-highlighter text-ink rounded-full text-xs font-mono uppercase font-medium -rotate-2 hover:rotate-0 transition-transform">Lavanda</span>
                         <span class="px-3 py-1 bg-pigment/10 text-pigment border border-pigment/20 rounded-full text-xs font-mono uppercase">Pigment</span>
                         <span class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-mono uppercase">Success</span>
                         <span class="px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-xs font-mono uppercase">Warning</span>
@@ -829,7 +832,7 @@
                     </div>
                     <table class="spec w-full mt-8 border border-stone-200 bg-white/70"><tbody>
                         <tr><td>size</td><td>px 12 · py 4 · 12px mono uppercase · radius 9999</td></tr>
-                        <tr><td>animação</td><td>.pulse-dot radar 2s · hover desrotaciona (marca-texto)</td></tr>
+                        <tr><td>animação</td><td>.pulse-dot radar 2s · hover desrotaciona (lavanda)</td></tr>
                     </tbody></table>
                 </div>
                 <div class="p-8 md:p-12">
@@ -969,7 +972,7 @@
                 <div class="flashlight-card bg-ink p-8 min-h-[220px]"><span class="text-[11px] font-mono text-stone-500">.text-reveal-wrapper</span><h4 class="text-xl font-medium mt-1 mb-4">Text mask</h4><div class="demo-text text-5xl font-semibold tracking-tighter"><span class="text-reveal-wrapper"><span class="text-reveal-content">Pigmento</span></span></div><button class="replay mt-4 text-xs font-mono text-stone-400 hover:text-white flex items-center gap-1"><iconify-icon icon="solar:restart-linear"></iconify-icon> replay</button></div>
                 <div class="flashlight-card bg-ink p-8 min-h-[220px] relative overflow-hidden group"><span class="text-[11px] font-mono text-stone-500">.carousel-slide</span><h4 class="text-xl font-medium mt-1 mb-4">Ken Burns</h4><div class="relative h-24 rounded-xl overflow-hidden"><div class="carousel-slide active"><img src="templates/digital-architect.aura.build/assets/c7fa69dd-d7fb-48f2-a866-ef3663_f6b789593f38.webp" class="w-full h-full object-cover grayscale" alt="" /></div></div></div>
                 <div class="flashlight-card bg-ink p-8 min-h-[220px]"><span class="text-[11px] font-mono text-stone-500">.beam-button</span><h4 class="text-xl font-medium mt-1 mb-6">Beam</h4><button class="beam-button auto px-8 py-4 bg-white text-ink rounded-full text-sm font-medium glow-white transition-all">Passe o mouse</button></div>
-                <div class="flashlight-card bg-ink p-8 min-h-[220px] flex flex-col"><span class="text-[11px] font-mono text-stone-500">.glow-border</span><h4 class="text-xl font-medium mt-1 mb-4">Borda orbitando</h4><div class="glow-border bg-ink flex-1 min-h-[80px] grid place-items-center text-stone-300 text-xs font-mono" style="background:#0A0A0A">conic-gradient</div></div>
+                <div class="flashlight-card bg-ink p-8 min-h-[220px] flex flex-col"><span class="text-[11px] font-mono text-stone-500">.glow-border</span><h4 class="text-xl font-medium mt-1 mb-4">Borda orbitando</h4><div class="glow-border bg-ink flex-1 min-h-[80px] grid place-items-center text-stone-300 text-xs font-mono" style="background:#1C123D">conic-gradient</div></div>
                 <div class="flashlight-card bg-ink p-8 min-h-[220px]"><span class="text-[11px] font-mono text-stone-500">.text-shimmer</span><h4 class="text-xl font-medium mt-1 mb-4">Brilho no texto</h4><div class="text-5xl font-semibold tracking-tighter gradient-text-light" style="background-image:linear-gradient(110deg,#666 35%,#fff 50%,#666 65%);background-size:250% 100%;animation:textshine 3.5s linear infinite;-webkit-background-clip:text;background-clip:text">Ink</div></div>
             </div>
 
@@ -1160,32 +1163,29 @@
             const grade = c => c >= 7 ? ['AAA', 'bg-emerald-100 text-emerald-800'] : c >= 4.5 ? ['AA', 'bg-emerald-50 text-emerald-700'] : c >= 3 ? ['AA Large', 'bg-amber-50 text-amber-700'] : ['Decorativo', 'bg-stone-100 text-stone-500'];
 
             const groups = [
-                ['Primária', 'Ação principal, texto de maior peso, botões.', [
-                    ['Ink', '#0A0A0A', '--ink', 'Botão primário, ícones ativos, backdrop', 'Ink → Stone 500 (gradient-text)'],
-                    ['Graphite', '#1C1C1C', '--graphite', 'Texto corrido padrão', 'Início de gradiente de título']]],
-                ['Secundária', 'Texto de apoio, metadados, bordas ativas.', [
-                    ['Stone 700', '#44403C', 'stone-700', 'Corpo secundário', '—'],
-                    ['Stone 600', '#57534E', 'stone-600', 'Descrições, legendas', '—'],
-                    ['Stone 500', '#78716C', 'stone-500', 'Labels mono, placeholder', 'Fim do gradiente de título']]],
+                ['Primária', 'Cor da marca: ações principais, links, foco e destaques.', [
+                    ['Roxo YVI', '#5B3DF5', '--pigment', 'Cor principal: CTA, link ativo, foco, glow', 'Roxo → Lavanda (Roxo YVI Glow)'],
+                    ['Violeta profundo', '#1C123D', '--ink', 'Fundos premium, seções escuras, botão primário escuro', 'Violeta → Roxo (borda orbitando)']]],
+                ['Secundária', 'Textos e contrastes; apoio à hierarquia.', [
+                    ['Grafite', '#242238', '--graphite', 'Textos e contrastes (corpo padrão)', 'Início do gradiente de título'],
+                    ['Stone 700', '#3E3B57', 'stone-700', 'Corpo secundário', '—'],
+                    ['Stone 600', '#565370', 'stone-600', 'Descrições, legendas', '—'],
+                    ['Stone 500', '#77738F', 'stone-500', 'Labels mono, placeholder', 'Fim do gradiente de título']]],
                 ['Neutras', 'Superfícies, divisórias e estados de repouso.', [
-                    ['White', '#FFFFFF', '--white', 'Fundo base do sistema', 'Início de gradient-text-light'],
-                    ['Stone 50', '#FAFAF9', 'stone-50', 'Cabeçalhos de seção, linhas zebra', 'Paper Mist'],
-                    ['Stone 100', '#F5F5F4', 'stone-100', 'Hover de superfície, disabled', '—'],
-                    ['Stone 200', '#E7E5E4', 'stone-200', 'Divisórias leves', '—'],
-                    ['Stone 300', '#D6D3D1', 'stone-300', 'Bordas (hairline)', '—'],
-                    ['Stone 400', '#A8A29E', 'stone-400', 'Ícones inativos, texto desabilitado', '—'],
-                    ['Paper', '#EAEAE5', '--paper', 'Superfície alternativa quente (legado Digital Architect)', 'Paper Mist']]],
-                ['Acento', 'Um único acento. Use com parcimônia, sobretudo em foco e glow.', [
-                    ['Pigment', '#2A3BFF', '--pigment', 'Foco, glow, link ativo, CTA especial', 'Pigment Glow'],
-                    ['Pigment Soft', '#8C97FF', '--pigment-soft', 'Hover do acento, brilho de texto', 'Pigment Glow']]],
+                    ['Branco', '#FFFFFF', '--white', 'Fundos e tipografia sobre escuro', 'Fim do Roxo YVI Glow'],
+                    ['Cinza tecnológico', '#F3F2F8', '--tech-gray', 'Interfaces e seções (cabeçalhos, hover de superfície)', 'Névoa YVI'],
+                    ['Stone 200', '#E6E4F0', 'stone-200', 'Divisórias leves', '—'],
+                    ['Stone 300', '#D3D0E2', 'stone-300', 'Bordas (hairline)', '—'],
+                    ['Stone 400', '#A29EB8', 'stone-400', 'Ícones inativos, texto desabilitado', '—']]],
+                ['Acento', 'Violeta de apoio: gradientes, elementos digitais, hover do primário.', [
+                    ['Violeta claro', '#7B61FF', '--violet', 'Gradientes e elementos digitais; hover do Roxo YVI', 'Roxo YVI Glow']]],
                 ['Feedback', 'Sempre acompanhe a cor com ícone ou texto.', [
                     ['Success', '#16A34A', 'emerald-600', 'Validação OK, status online', '—'],
                     ['Warning', '#B45309', 'amber-700', 'Atenção, ação reversível', '—'],
                     ['Error', '#DC2626', 'red-600', 'Erro de campo, ação destrutiva', '—'],
                     ['Info', '#2563EB', 'blue-600', 'Dicas e avisos neutros', '—']]],
                 ['Decorativa', 'Nunca como cor de texto ou única pista de estado.', [
-                    ['Marca-texto', '#CCFF00', '--highlighter', 'Badges, sublinhados, ponta do gradiente', 'Pigment → Highlighter'],
-                    ['Madeira', '#B8895B', '--wood', 'Contexto de produto (mesa de madeira)', '—']]],
+                    ['Lavanda digital', '#B9A6FF', '--highlighter', 'Destaques e detalhes: badges, blobs de fundo, brilhos', 'Roxo → Lavanda']]],
             ];
             const host = $('#color-groups');
             groups.forEach(([name, desc, list], gi) => {
@@ -1193,7 +1193,7 @@
                 sec.innerHTML = `<div class="px-8 md:px-12 pt-10 pb-2 flex flex-wrap items-baseline gap-4 reveal"><h3 class="text-sm font-bold uppercase tracking-widest">${name}</h3><span class="text-xs text-stone-500">${desc}</span></div><div class="p-8 md:p-12 pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>`;
                 const grid = sec.lastElementChild;
                 list.forEach(([n, hex, token, use, grad], i) => {
-                    const rgb = hex2rgb(hex), onW = cr(hex, '#FFFFFF'), onI = cr(hex, '#0A0A0A');
+                    const rgb = hex2rgb(hex), onW = cr(hex, '#FFFFFF'), onI = cr(hex, '#1C123D');
                     const [gw, cw] = grade(onW), [gi2, ci] = grade(onI);
                     const light = lum(rgb) > .4;
                     const card = document.createElement('div'); card.className = 'swatch reveal rounded-2xl overflow-hidden border border-stone-300 bg-white'; card.style.transitionDelay = (i % 3) * .1 + 's';
@@ -1205,7 +1205,7 @@
                         </div>
                         <div class="p-4 space-y-3 text-[11px] font-mono text-stone-600">
                             <div class="grid grid-cols-[34px_1fr] gap-y-1"><span class="text-stone-400">HEX</span><b class="text-stone-900">${hex}</b><span class="text-stone-400">RGB</span><span>${rgb.join(', ')}</span><span class="text-stone-400">HSL</span><span>${rgb2hsl(rgb)}</span></div>
-                            <div class="flex flex-wrap gap-1.5"><span class="px-2 py-0.5 rounded-full ${cw}">s/ branco ${onW.toFixed(1)}:1 · ${gw}</span><span class="px-2 py-0.5 rounded-full ${ci}">s/ ink ${onI.toFixed(1)}:1 · ${gi2}</span></div>
+                            <div class="flex flex-wrap gap-1.5"><span class="px-2 py-0.5 rounded-full ${cw}">s/ branco ${onW.toFixed(1)}:1 · ${gw}</span><span class="px-2 py-0.5 rounded-full ${ci}">s/ violeta ${onI.toFixed(1)}:1 · ${gi2}</span></div>
                             <p class="font-sans text-xs text-stone-500 leading-relaxed"><b class="text-stone-800">Uso:</b> ${use}</p>
                             <p class="text-stone-400">gradiente: ${grad}</p>
                         </div>`;
@@ -1215,17 +1215,17 @@
                 host.appendChild(sec);
             });
 
-            const ops = [['Ink', '10,10,10'], ['Pigment', '42,59,255'], ['Marca-texto', '204,255,0'], ['Stone 500', '120,113,108']];
+            const ops = [['Violeta profundo', '28,18,61'], ['Roxo YVI', '91,61,245'], ['Lavanda digital', '185,166,255'], ['Grafite', '36,34,56']];
             $('#opacity-rows').innerHTML = ops.map(([n, rgb]) => `
                 <div class="grid grid-cols-[110px_1fr] items-center gap-4 reveal"><span class="text-[11px] font-mono text-stone-500">${n}</span>
                 <div class="grid grid-cols-6 rounded-xl overflow-hidden border border-stone-300" style="background-image:linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%),linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%);background-size:12px 12px;background-position:0 0,6px 6px">
                 ${[100, 80, 60, 40, 20, 10].map(a => `<div class="h-14 flex items-end p-1.5 text-[10px] font-mono ${a > 40 ? 'text-white' : 'text-stone-700'} hover:scale-y-110 transition-transform origin-bottom" style="background:rgba(${rgb},${a / 100})">${a}%</div>`).join('')}</div></div>`).join('');
 
             const grads = [
-                ['Ink Fade', 'linear-gradient(135deg,#0A0A0A,#78716C)', 'Texto de título (.gradient-text)'],
-                ['Pigment Glow', 'linear-gradient(135deg,#2A3BFF,#8C97FF 55%,#fff)', 'Halos e brilhos (.glow-pigment)'],
-                ['Ink → Marca-texto', 'conic-gradient(from 200deg,#0A0A0A,#2A3BFF,#CCFF00,#0A0A0A)', 'Bordas orbitando (.glow-border)'],
-                ['Paper Mist', 'linear-gradient(180deg,#fff,#EAEAE5)', 'Transição entre seções'],
+                ['Violeta Fade', 'linear-gradient(135deg,#1C123D,#77738F)', 'Texto de título (.gradient-text)'],
+                ['Roxo YVI Glow', 'linear-gradient(135deg,#5B3DF5,#7B61FF 45%,#B9A6FF 75%,#fff)', 'Halos e brilhos (.glow-pigment)'],
+                ['Violeta → Lavanda', 'conic-gradient(from 200deg,#1C123D,#5B3DF5,#B9A6FF,#1C123D)', 'Bordas orbitando (.glow-border)'],
+                ['Névoa YVI', 'linear-gradient(180deg,#fff,#F3F2F8)', 'Transição entre seções'],
             ];
             $('#gradients').innerHTML = grads.map(([n, g, u], i) => `<div class="reveal swatch rounded-2xl overflow-hidden border border-stone-300 bg-white" style="transition-delay:${i * .1}s"><div class="h-36" style="background:${g}"></div><div class="p-4"><b class="text-sm">${n}</b><p class="text-[11px] font-mono text-stone-500 mt-1 break-all">${g}</p><p class="text-xs text-stone-500 mt-2">${u}</p></div></div>`).join('');
 
